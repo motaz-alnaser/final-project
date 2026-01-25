@@ -1,0 +1,471 @@
+@charset "utf-8";
+
+/* ===============================
+   PRISM FLUX — ADMIN DASHBOARD
+================================ */
+
+:root {
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --carbon-dark: #0a0a0a;
+    --carbon-medium: #121212;
+    --metal-dark: rgba(255, 255, 255, 0.08);
+    --accent-purple: #9945ff;
+    --accent-cyan: #8be9fd;
+    --success: #22c55e;
+    --accent-green: #00ff88;
+}
+
+/* ===== Admin Layout Structure ===== */
+.admin-container {
+    display: flex;
+    min-height: calc(100vh - 60px); /* اطرح ارتفاع الهيدر */
+    background-color: var(--carbon-dark);
+}
+
+.admin-sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, var(--carbon-dark), var(--carbon-medium));
+    border-right: 1px solid var(--metal-dark);
+    padding: 30px 20px;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    bottom: 0;
+    overflow-y: auto;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+
+   
+    scrollbar-width: none; 
+}
+
+
+.admin-sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.admin-content {
+    flex: 1;
+    margin-left: 260px; 
+    padding: 40px;
+    background-color: var(--carbon-dark);
+    min-height: calc(100vh - 60px);
+    overflow-y: auto;
+}
+
+/* ===== Sidebar ===== */
+.sidebar-logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 50px;
+    color: var(--text-primary);
+}
+
+.sidebar-logo span {
+    color: var(--accent-cyan);
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li {
+    margin-bottom: 10px;
+}
+
+.sidebar-menu li a {
+    display: block;
+    padding: 14px 16px;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 15px;
+}
+
+.sidebar-menu li a:hover,
+.sidebar-menu li a.active {
+    background: linear-gradient(135deg, rgba(140, 82, 255, 0.15), rgba(0, 255, 255, 0.08));
+    color: var(--text-primary);
+    border-left: 4px solid var(--accent-purple);
+}
+
+/* ===== Admin Header ===== */
+.admin-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(180deg, var(--carbon-dark), var(--carbon-medium));
+    z-index: 1001;
+    border-bottom: 1px solid var(--metal-dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+}
+
+.header-title h1 {
+    font-size: 28px;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.header-title p {
+    color: var(--text-secondary);
+    margin: 5px 0 0;
+    font-size: 14px;
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--metal-dark);
+}
+
+/* ========== STATS CARDS ========== */
+.dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, rgba(42, 42, 42, 0.4), rgba(18, 18, 18, 0.9));
+    border: 1px solid var(--metal-dark);
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.stat-card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.stat-number {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* ========== TABLES ========== */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-primary);
+    direction: rtl;
+    text-align: right;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 15px 20px;
+    text-align: right;
+    border-bottom: 1px solid var(--metal-dark);
+}
+
+.admin-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ========== STATUS BADGES ========== */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-active { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+.status-confirmed { background: rgba(0, 255, 136, 0.1); color: #00ff88; }
+.status-pending { background: rgba(250, 204, 21, 0.1); color: #faa815; }
+.status-rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+/* ========== RECENT ACTIVITIES ========== */
+.recent-activities-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--metal-dark);
+}
+
+.card-cta {
+    padding: 8px 20px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+}
+
+.card-cta:hover {
+    background: rgba(153, 69, 255, 0.2);
+}
+
+/* ========== ACTION BUTTONS ========== */
+.action-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+/* ========== FILTERS BAR ========== */
+.filters-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-select,
+.filter-input {
+    background: var(--carbon-medium);
+    border: 1px solid var(--metal-dark);
+    color: var(--text-primary);
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    min-width: 180px;
+    outline: none;
+}
+
+.filter-input {
+    min-width: 250px;
+    padding: 12px 20px;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 10px rgba(153, 69, 255, 0.3);
+    background: var(--carbon-dark);
+}
+
+.filter-select:hover,
+.filter-input:hover {
+    border-color: var(--accent-cyan);
+}
+
+/* إذا كنت تحب تضيف زر "Filter" */
+.filter-btn {
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(153, 69, 255, 0.5);
+}
+.activity-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 25px;
+    white-space: pre-line;
+}
+
+.what-you-get-section,
+.what-to-bring-section {
+    margin-top: 30px;
+}
+
+.what-you-get-section h3,
+.what-to-bring-section h3 {
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.what-you-get-section ul,
+.what-to-bring-section ul {
+    color: var(--text-secondary);
+    padding-left: 20px;
+    list-style-type: disc;
+    line-height: 1.6;
+}
+
+.what-you-get-section li,
+.what-to-bring-section li {
+    margin-bottom: 8px;
+}
+/* ========== USER BUTTONS ========== */
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-profile,
+.btn-login,
+.btn-logout {
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid var(--text-secondary);
+    color: var(--text-primary);
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-profile {
+    background-color: transparent; /* خلفية بيضاء */
+    border: 1px solid var(--text-secondary); /* بوردر */
+}
+
+.btn-profile:hover {
+    background-color: var(--carbon-medium);
+    border-color: var(--accent-purple);
+    color: var(--text-primary);
+}
+
+.btn-logout {
+    background-color: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0;
+    font-size: 14px;
+    text-decoration: underline;
+}
+
+.btn-logout:hover {
+    color: var(--accent-purple);
+    text-decoration: none;
+}
+
+.btn-login {
+    background-color: transparent;
+    border: 1px solid var(--text-secondary);
+}
+
+.btn-login:hover {
+    background-color: var(--carbon-medium);
+    border-color: var(--accent-purple);
+    color: var(--text-primary);
+}
+/* Star Rating */
+.star-rating input[type="radio"] {
+    display: none;
+}
+
+.star-rating label {
+    transition: color 0.2s;
+}
+
+.star-rating input[type="radio"]:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    color: #ffd700; /* لون الذهب */
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--carbon-dark);
+    border: 1px solid var(--metal-dark);
+    border-radius: 15px;
+    padding: 30px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 20px;
+    cursor: pointer;
+}
+.logout-btn {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: transparent;
+    border: 1px solid var(--metal-dark);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background: linear-gradient(135deg, rgba(140, 82, 255, 0.15), rgba(0, 255, 255, 0.08));
+    color: var(--text-primary);
+    border-left: 4px solid var(--accent-purple);
+}
