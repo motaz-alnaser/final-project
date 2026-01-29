@@ -46,7 +46,7 @@
                                 <select id="activityCategory" name="category_id" required style="width: 100%; padding: 15px; background: var(--carbon-dark); border: 1px solid var(--metal-dark); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}" {{ $category->id == old('category_id', $activity->category_id) ? 'selected' : '' }}>
-                                            {{ $category->name }}
+                                            {{ $category->name_en }}
                                         </option>
                                     @endforeach
                                 </select>

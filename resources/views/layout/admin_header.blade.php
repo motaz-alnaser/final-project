@@ -4,7 +4,6 @@
         <p>System overview and management</p>
     </div>
     <div class="header-user">
-        <img src="{{ asset('images/admin-avatar.jpg') }}" alt="Admin User" class="user-avatar">
         <span>{{ Auth::user()->name ?? 'Admin User' }}</span>
     </div>
 </header>

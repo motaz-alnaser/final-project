@@ -75,7 +75,7 @@
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <div class="card-image" style="width: 40px; height: 40px; border-radius: 5px; overflow: hidden;">
-                                            <img src="{{ asset($booking->activity->image_url ?? 'images/default-activity.jpg') }}" alt="{{ $booking->activity->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            <img src="{{ $activity->primaryImage ? asset('storage/' . $activity->primaryImage->image_url) : asset('images/default-activity.jpg') }}" alt="{{ $activity->title }}" style="width: 100%; height: 100%; object-fit: cover;">
                                         </div>
                                         <span>{{ $booking->activity->title }}</span>
                                     </div>

@@ -102,15 +102,9 @@
                 <form method="POST" action="{{ route('booking.store', $activity->id) }}">
                     @csrf
 
-                    <div class="form-group">
-                        <label for="booking_date" class="form-label">Date</label>
-                        <input type="date" id="booking_date" name="booking_date" required class="form-input">
-                    </div>
+                   
 
-                    <div class="form-group">
-                        <label for="booking_time" class="form-label">Time</label>
-                        <input type="time" id="booking_time" name="booking_time" required class="form-input">
-                    </div>
+                   
 
                     <div class="form-group">
                         <label for="num_participants" class="form-label">Number of Participants (Max: {{ $activity->max_participants }})</label>

@@ -106,15 +106,16 @@
                                     ) }} JOD
                                 </td>
                                 <td>{{ $activity->bookings_count }}</td>
-                                <td>{{ $activity->category?->name ?? 'Uncategorized' }}</td>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                        <div class="card-image" style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden;">
-                                            <img src="{{ asset($activity->image_url ?? 'images/default-activity.jpg') }}" alt="{{ $activity->title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                        </div>
-                                        <span>{{ $activity->title }}</span>
-                                    </div>
-                                </td>
+                                <td>{{ $activity->category?->name_en ?? 'Uncategorized' }}</td>
+                               
+<td>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div class="card-image" style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden;">
+            <img src="{{ $activity->primaryImage ? asset('storage/' . $activity->primaryImage->image_url) : asset('images/default-activity.jpg') }}" alt="{{ $activity->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <span>{{ $activity->title }}</span>
+    </div>
+</td>
                             </tr>
                         @empty
                             <tr>
@@ -126,6 +127,9 @@
                     </tbody>
                 </table>
                 <!-- Pagination -->
+                <div class="pagination-wrapper" style="margin-top: 40px; text-align: center;">
+                    {{ $activities->links('vendor.pagination.custom') }}
+                </div>
 
             </div>
         </div>

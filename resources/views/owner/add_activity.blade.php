@@ -5,7 +5,6 @@
 @section('content')
     <section class="stats-section">
         <div class="philosophy-container">
-           
             <div class="stat-card centered-form-card">
                 <form id="addActivityForm" method="POST" action="{{ route('owner.store_activity') }}" enctype="multipart/form-data">
                     @csrf
@@ -29,7 +28,7 @@
                                 <select id="category" name="category_id" required style="width: 100%; padding: 15px; background: var(--carbon-dark); border: 1px solid var(--metal-dark); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
                                     <option value="">Select Category</option>
                                     @foreach($categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        <option value="{{ $category->id }}">{{ $category->name_en }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -37,6 +36,23 @@
                             <div class="form-group" style="margin-bottom: 25px;">
                                 <label for="location" style="display: block; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Location</label>
                                 <input type="text" id="location" name="location" required style="width: 100%; padding: 15px; background: var(--carbon-dark); border: 1px solid var(--metal-dark); border-radius: 8px; color: var(--text-primary); font-size: 14px;" placeholder="e.g., King Abdullah Park, Amman">
+                            </div>
+                            
+                            <!-- Activity Date Field -->
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label for="activity_date" style="display: block; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Activity Date</label>
+                                <input type="date" id="activity_date" name="activity_date" required 
+                                       min="{{ now()->toDateString() }}"
+                                       style="width: 100%; padding: 15px; background: var(--carbon-dark); border: 1px solid var(--metal-dark); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+                                <p style="color: var(--text-dim); font-size: 12px; margin-top: 5px;">Select the date when this activity will take place</p>
+                            </div>
+                            
+                            <!-- Activity Time Field -->
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label for="activity_time" style="display: block; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Activity Time</label>
+                                <input type="time" id="activity_time" name="activity_time" required 
+                                       style="width: 100%; padding: 15px; background: var(--carbon-dark); border: 1px solid var(--metal-dark); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+                                <p style="color: var(--text-dim); font-size: 12px; margin-top: 5px;">Select the start time for this activity</p>
                             </div>
                             
                             <div class="form-group" style="margin-bottom: 25px;">
@@ -66,13 +82,16 @@
                                         <polyline points="21 15 16 10 5 21"></polyline>
                                     </svg>
                                     <p style="color: var(--text-secondary); margin-bottom: 10px;">Drag & drop images here</p>
-                                    <p style="color: var(--text-dim); font-size: 12px;">or click to browse files</p>
-                                    <input type="file" name="image" accept="image/*" style="display: none;">
-                                    <img id="previewImg" style="max-width: 100%; max-height: 200px; margin-top: 15px; display: none;" />
+                                    <p style="color: var(--text-dim); font-size: 12px;">or click to browse files (max 5 images)</p>
+                                    <input type="file" name="images[]" multiple accept="image/*" style="display: none;">
+                                    <div id="imagePreviewContainer" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;"></div>
                                 </div>
                             </div>
                             
-                            <div style="display: flex; gap: 15px;">
+                            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                                <a href="{{ route('owner.dashboard') }}" class="card-cta" style="flex: 1; padding: 12px; text-align: center; background: var(--metal-dark); text-decoration: none; color: var(--text-primary);">
+                                    Cancel
+                                </a>
                                 <button type="submit" class="card-cta" style="flex: 1; padding: 12px;">Publish Activity</button>
                             </div>
                         </div>
@@ -82,7 +101,6 @@
         </div>
     </section>
 
-    <script src="{{ asset('js/templatemo-prism-scripts.js') }}" defer></script>
     <script>
         window.addEventListener('load', () => {
             setTimeout(() => {
@@ -99,21 +117,51 @@
             });
         }
 
-        // Image preview
-        const imageInput = document.querySelector('input[name="image"]');
-        const previewImg = document.getElementById('previewImg');
+        // Enhanced image preview for multiple files
+        const imageInput = document.querySelector('input[name="images[]"]');
+        const previewContainer = document.getElementById('imagePreviewContainer');
 
         imageInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    previewImg.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                previewImg.style.display = 'none';
+            previewContainer.innerHTML = '';
+            
+            if (this.files.length > 5) {
+                alert('You can only upload up to 5 images');
+                this.value = '';
+                return;
+            }
+
+            Array.from(this.files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.createElement('div');
+                        preview.style.position = 'relative';
+                        preview.style.borderRadius = '8px';
+                        preview.style.overflow = 'hidden';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '100%';
+                        img.style.height = '80px';
+                        img.style.objectFit = 'cover';
+                        
+                        preview.appendChild(img);
+                        previewContainer.appendChild(preview);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        // Prevent form submission if date/time not set properly
+        document.getElementById('addActivityForm').addEventListener('submit', function(e) {
+            const dateInput = document.getElementById('activity_date');
+            const timeInput = document.getElementById('activity_time');
+            
+            if (dateInput.value && new Date(dateInput.value) < new Date()) {
+                e.preventDefault();
+                alert('Activity date cannot be in the past');
+                dateInput.focus();
             }
         });
     </script>
@@ -121,7 +169,4 @@
 
 @section('scripts')
     <script src="{{ asset('js/templatemo-prism-scripts.js') }}" defer></script>
-    <script>
-       
-    </script>
 @endsection

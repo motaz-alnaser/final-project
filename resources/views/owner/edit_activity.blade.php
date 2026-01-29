@@ -32,7 +32,7 @@
                                     <option value="">Select Category</option>
                                     @foreach($categories as $cat)
                                         <option value="{{ $cat->id }}" {{ $cat->id == old('category_id', $activity->category_id) ? 'selected' : '' }}>
-                                            {{ $cat->name }}
+                                            {{ $cat->name_en }}
                                         </option>
                                     @endforeach
                                 </select>

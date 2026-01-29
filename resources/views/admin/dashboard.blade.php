@@ -137,7 +137,7 @@
                                         {{ ucfirst($activity->status) }}
                                     </span>
                                 </td>
-                                <td>{{ $activity->category?->name ?? 'Uncategorized' }}</td>
+                                <td>{{ $activity->category?->name_en ?? 'Uncategorized' }}</td>
                                 <td>{{ $activity->host->name ?? 'Unknown' }}</td>
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 10px;">

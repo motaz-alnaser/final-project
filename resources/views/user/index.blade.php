@@ -27,7 +27,7 @@
                     <div class="card">
                         <div class="card-number">0{{ $activity->id }}</div>
                         <div class="card-image">
-                            <img src="{{ asset($activity->image_url ?? 'images/default-activity.jpg') }}" alt="{{ $activity->title }}">
+                            <img src="{{ $activity->primaryImage ? asset('storage/' . $activity->primaryImage->image_url) : asset('images/default-activity.jpg') }}" alt="{{ $activity->title }}">
                         </div>
                         <h3 class="card-title">{{ $activity->title }}</h3>
                         <p class="card-description">{{ Str::limit($activity->description, 100) }}</p>
@@ -44,8 +44,8 @@
                     <div class="card">
                         <div class="card-number">00</div>
                         <div class="card-image">
-                            <img src="{{ asset('images/no-activities.jpg') }}" alt="No Activities">
-                        </div>
+<!-- في الكاروسيل -->
+<img src="{{ $activity->primaryImage ? asset('storage/' . $activity->primaryImage->image_url) : asset('images/default-activity.jpg') }}" alt="{{ $activity->title }}">                       </div>
                         <h3 class="card-title">No Activities Available</h3>
                         <p class="card-description">Check back later for exciting activities!</p>
                         <button class="card-cta" onclick="scrollToSection('about')">Discover More</button>

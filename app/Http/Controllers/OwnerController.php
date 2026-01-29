@@ -39,6 +39,7 @@ class OwnerController extends Controller
     
     $activities = Activity::where('host_id', $hostId)
                          ->withCount('bookings')
+                          ->with(['primaryImage']) 
                          ->latest()
                          ->paginate(5); 
 
@@ -107,50 +108,66 @@ public function add_activity()
     return view('owner.add_activity', compact('categories'));
 }
 
- public function storeActivity(Request $request)
-    {
-        $hostId = Auth::id();
+public function storeActivity(Request $request)
+{
+    $hostId = Auth::id();
 
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
-            'location' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'max_participants' => ['required', 'integer', 'min:1'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'], 
-        ]);
+    $validated = $request->validate([
+        'title' => ['required', 'string', 'max:255'],
+        'description' => ['required', 'string'],
+        'location' => ['required', 'string', 'max:255'],
+        'price' => ['required', 'numeric', 'min:0'],
+        'max_participants' => ['required', 'integer', 'min:1'],
+        'category_id' => ['required', 'exists:categories,id'],
+        'images' => ['nullable', 'array'],
+        'images.*' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+        // ⭐️ أضف هذين الحقلين إلى التحقق
+        'activity_date' => ['required', 'date', 'after_or_equal:today'],
+        'activity_time' => ['required', 'date_format:H:i'],
+    ]);
 
-        // بتعمل نشاط جديد
-        $activity = Activity::create([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'location' => $validated['location'],
-            'price' => $validated['price'],
-            'max_participants' => $validated['max_participants'],
-            'category_id' => $validated['category_id'],
-            'host_id' => $hostId,
-            'status' => 'active',
-        ]);
+    // إنشاء النشاط
+    $activity = Activity::create([
+        'title' => $validated['title'],
+        'description' => $validated['description'],
+        'location' => $validated['location'],
+        'price' => $validated['price'],
+        'max_participants' => $validated['max_participants'],
+        'category_id' => $validated['category_id'],
+        'host_id' => $hostId,
+        'status' => 'active',
+        // ⭐️ استخدم القيم الفعلية من الـ validated
+        'activity_date' => $validated['activity_date'],
+        'activity_time' => $validated['activity_time'],
+    ]);
 
-        //للصور
-        if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            $path = $request->file('image')->storeAs(
-                'uploads/activities',
-                time() . '_' . $request->file('image')->getClientOriginalName(),
-                'public'
-            );
+    // رفع الصور
+    if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $image) {
+            if ($image->isValid()) {
+                $path = $image->storeAs(
+                    'uploads/activities',
+                    time() . '_' . $image->getClientOriginalName(),
+                    'public'
+                );
 
-            ActivityImage::create([
-                'activity_id' => $activity->id,
-                'image_url' => $path,
-                'is_primary' => true,
-            ]);
+                ActivityImage::create([
+                    'activity_id' => $activity->id,
+                    'image_url' => $path,
+                    'is_primary' => false, 
+                ]);
+            }
         }
 
-        return redirect()->route('owner.dashboard')->with('success', 'Activity added successfully.');
+        // تحديد الصورة الأولى كصورة رئيسية
+        $firstImage = $activity->images()->first();
+        if ($firstImage) {
+            $firstImage->update(['is_primary' => true]);
+        }
     }
 
+    return redirect()->route('owner.dashboard')->with('success', 'Activity added successfully.');
+}
 public function editActivity($activityId)
 {
     $hostId = Auth::id();

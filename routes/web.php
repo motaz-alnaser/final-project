@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PaymentController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 
 /*admin aouts*/
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -106,3 +108,10 @@ Route::post('/logout', function () {
 })->name('logout');
 // routes/web.php
 Route::post('/booking/review/{booking}', [UserController::class, 'submitReview'])->name('booking.review');
+
+
+
+// Payment Routes
+Route::get('/booking/payment/{booking}', [PaymentController::class, 'create'])->name('booking_payment');
+Route::post('/booking/payment/{booking}', [PaymentController::class, 'store'])->name('booking_payment.store');
+Route::post('/booking/payment/confirm', [PaymentController::class, 'confirm'])->name('booking_payment.confirm');

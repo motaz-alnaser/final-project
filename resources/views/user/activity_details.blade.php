@@ -112,7 +112,7 @@
                 <div>
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
                         <span class="tech-badge" style="background: rgba(153, 69, 255, 0.1); border-color: var(--accent-purple);">
-                            {{ $activity->category?->name ?? 'General' }}
+                            {{ $activity->category?->name_en ?? 'General' }}
                         </span>
                         <div class="rating-stars" style="color: var(--accent-yellow); display: flex; align-items: center; gap: 5px;">
                             <span>{{ number_format($activity->rating ?? 0, 1) }}</span>
@@ -134,9 +134,11 @@
                     <p style="color: var(--text-secondary); margin-bottom: 30px; display: flex; align-items: center; gap: 10px;">
                         <span>📍</span> {{ $activity->location }}
                     </p>
+                    <p style="color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+        <span>📅</span> {{ \Carbon\Carbon::parse($activity->activity_date)->format('F j, Y') }} at {{ $activity->activity_time }}
+    </p>
 
                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
-                        <img src="{{ asset($activity->host->avatar_url ?? 'images/default-host.jpg') }}" alt="{{ $activity->host->name }}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
                         <div>
                             <h4 style="color: var(--text-primary); margin-bottom: 5px;">{{ $activity->host->name }}</h4>
                             <p style="color: var(--text-secondary); font-size: 14px;">{{ $activity->host->bio ?? 'Host' }}</p>
@@ -156,10 +158,7 @@
                         <a href="{{ route('booking.create', $activity->id) }}" class="card-cta" style="width: 100%;">Book This Activity</a>
                     </div>
 
-                    <div class="form-group">
-                        <label for="date" style="display: block; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Select Date</label>
-                        <input type="date" id="date" style="width: 100%; padding: 15px; background: var(--carbon-dark); border: 1px solid var(--metal-dark); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
-                    </div>
+                   
                 </div>
             </div>
 
@@ -239,7 +238,6 @@
                 @forelse($activity->reviews as $review)
                     <div class="review-card">
                         <div style="display: flex; align-items: start; gap: 15px; margin-bottom: 15px;">
-                            <img src="{{ asset($review->user->avatar_url ?? 'images/default-user.jpg') }}" alt="{{ $review->user->name }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
                             <div>
                                 <h4 style="color: var(--text-primary); margin-bottom: 5px;">{{ $review->user->name }}</h4>
                                 <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 10px;">{{ $review->created_at->format('F j, Y') }}</p>

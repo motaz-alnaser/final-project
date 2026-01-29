@@ -1,66 +1,140 @@
 @extends('layout.master')
+
 @section('content')
-<body>
-    <section class="hero" style="min-height: 100vh; padding: 120px 20px;">
-        <div class="philosophy-container">
-            <h1 class="philosophy-headline">Complete Your Booking</h1>
-            <p class="philosophy-subheading">Pay the minimum amount to confirm your activity.</p>
+<div class="stats-section" style="padding: 60px 30px;">
+    <div class="philosophy-container">
+        <h2 class="section-title">Complete Your Payment</h2>
 
-            <div class="stat-card" style="padding: 30px;">
-                <h3>{{ $booking->activity->title }}</h3>
-                <p>Date: {{ $booking->booking_date->format('F j, Y') }}</p>
-                <p>Total: {{ $booking->total_amount }} JOD</p>
-                <p>Minimum Required: {{ $booking->total_amount * 0.5 }} JOD</p>
+        <div style="max-width: 600px; margin: 0 auto; background: var(--carbon-dark); padding: 30px; border-radius: 15px;">
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                You're about to pay <strong>${{ number_format($booking->total_amount, 2) }}</strong> for:
+                <br><strong>{{ $booking->activity->title }}</strong>
+            </p>
 
-                <form id="payment-form" action="{{ route('booking.pay', $booking->id) }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="payment_intent_id" value="{{ $booking->payment_intent_id }}">
-                    <div id="payment-element">
-                       
-                    </div>
-                    <button id="submit-button" class="card-cta" style="width: 100%; margin-top: 20px;">
-                        <div class="spinner hidden" id="spinner"></div>
-                        <span id="button-text">Pay Now</span>
-                    </button>
-                </form>
-            </div>
+            <form id="payment-form">
+                <div id="card-element" style="border: 1px solid var(--metal-dark); padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
+                <button type="submit" class="card-cta" style="width: 100%;">Pay Now</button>
+            </form>
+
+            <div id="payment-message" style="margin-top: 20px; color: var(--text-dim);"></div>
         </div>
-    </section>
-    @endsection
-    @section('scripts')
+    </div>
+</div>
 
-    <script>
-        const stripe = Stripe('{{ config('services.stripe.key') }}');
-        const clientSecret = '{{ $booking->payment_intent_id }}'; 
+<script src="https://js.stripe.com/v3/"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+const stripe = Stripe('{{ config("services.stripe.key") }}');
+const elements = stripe.elements();
 
-        const elements = stripe.elements({
-            clientSecret: clientSecret,
-            appearance: {
-                theme: 'night'
+const cardElement = elements.create('card', {
+    hidePostalCode: true,  // ← هذا السطر الجديد!
+    style: {
+        base: {
+            color: '#fff',
+            fontFamily: 'Arial, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+                color: '#aab7c4'
+            }
+        },
+        invalid: {
+            color: '#fa755a',
+            iconColor: '#fa755a'
+        }
+    }
+});
+cardElement.mount('#card-element');
+
+const form = document.getElementById('payment-form');
+const message = document.getElementById('payment-message');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Processing...';
+    message.textContent = '';
+
+    try {
+        const response = await fetch('{{ route("booking_payment.store", $booking->id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             }
         });
 
-        const paymentElement = elements.create('payment');
-        paymentElement.mount('#payment-element');
+        const data = await response.json();
 
-        const form = document.getElementById('payment-form');
-        const submitButton = document.getElementById('submit-button');
-        const spinner = document.getElementById('spinner');
-        const buttonText = document.getElementById('button-text');
+        if (data.error) {
+            throw new Error(data.error);
+        }
 
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
+        const result = await stripe.confirmCardPayment(data.clientSecret, {
+            payment_method: {
+                card: cardElement,
+                billing_details: {
+                    name: '{{ auth()->user()->name ?? "" }}',
+                    email: '{{ auth()->user()->email ?? "" }}'
+                }
+            }
+        });
 
-            const {error} = await stripe.confirmPayment({
-                elements,
-                confirmParams: {
-                    return_url: '{{ route('booking.payment.success', $booking->id) }}',
+        if (result.error) {
+            throw new Error(result.error.message);
+        }
+
+        if (result.paymentIntent.status === 'succeeded') {
+            const confirmResponse = await fetch('{{ route("booking_payment.confirm") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
+                body: JSON.stringify({
+                    payment_intent_id: result.paymentIntent.id,
+                    payment_method_id: result.paymentIntent.payment_method
+                })
             });
 
-            if (error) {
-                alert(error.message);
+            const confirmData = await confirmResponse.json();
+
+            if (confirmData.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Payment Successful!',
+                    text: confirmData.message,
+                    html: `
+                        <div style="text-align: center;">
+                            <h3>Booking Confirmed! ✓</h3>
+                            <p style="margin: 15px 0;"><strong>Booking #${{ $booking->id }}</strong></p>
+                            <p style="margin: 10px 0;">${{ $booking->activity->title }}</p>
+                            <p style="margin: 10px 0;">Total: ${{ number_format($booking->total_amount, 2) }}</p>
+                            ${confirmData.receiptUrl ? `<p style="margin: 15px 0;"><a href="${confirmData.receiptUrl}" target="_blank" style="color: var(--accent-green);">View Receipt</a></p>` : ''}
+                            <div style="margin-top: 20px;">
+                                <a href="{{ route('user.bookings') }}" style="display: inline-block; padding: 10px 20px; background: var(--accent-green); color: white; text-decoration: none; border-radius: 5px; margin: 5px;">View My Bookings</a>
+                                <a href="{{ route('user.activities') }}" style="display: inline-block; padding: 10px 20px; background: var(--metal-dark); color: white; text-decoration: none; border-radius: 5px; margin: 5px;">Browse More Activities</a>
+                            </div>
+                        </div>
+                    `,
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    width: '500px'
+                });
+            } else {
+                throw new Error('Payment confirmation failed');
             }
-        });
-    </script>
-    @endsection
+        }
+    } catch (error) {
+        message.textContent = error.message;
+        message.style.color = '#fa755a';
+        submitButton.disabled = false;
+        submitButton.textContent = 'Pay Now';
+    }
+});
+</script>
+
+@endsection

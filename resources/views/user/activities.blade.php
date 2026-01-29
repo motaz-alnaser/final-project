@@ -128,7 +128,7 @@
                     <option value="all">All Categories</option>
                     @foreach($categories as $category)
                         <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
-                            {{ $category->name }}
+                            {{ $category->name_en }}
                         </option>
                     @endforeach
                 </select>
@@ -158,7 +158,7 @@
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <span class="tech-badge">
-                                {{ $activity->category?->name ?? 'General' }}
+                                {{ $activity->category?->name_en ?? 'General' }}
                             </span>
                             <div style="color: var(--accent-yellow); display: flex; align-items: center; gap: 5px;">
                                 <span>{{ number_format($activity->rating ?? 0, 1) }}</span>

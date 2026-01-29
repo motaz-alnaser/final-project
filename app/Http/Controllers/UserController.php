@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use App\Models\Category;
  use App\Models\Activity_details;
    use App\Models\Booking;
+   use App\Models\Review;
    use Carbon\Carbon;
 
 
@@ -19,9 +20,8 @@ class UserController extends Controller
 
 public function index()
 {
-   
     $activities = Activity::where('status', 'active')
-                          ->with('host:id,name', 'category:id,name')
+                          ->with(['host:id,name', 'category:id,name', 'primaryImage'])
                           ->latest()
                           ->take(10) 
                           ->get();
@@ -162,10 +162,11 @@ public function changePassword(Request $request)
     
 public function activities(Request $request)
 {
-    $query = Activity::with(['category', 'host'])
-        ->where('status', 'active'); 
+    $query = Activity::with(['category', 'host', 'primaryImage'])
+        ->where('status', 'active')
+        ->whereDate('activity_date', '>=', now()->toDateString()); 
 
-    
+   
     if ($request->filled('category') && $request->category !== 'all') {
         $query->where('category_id', $request->category);
     }
@@ -175,7 +176,7 @@ public function activities(Request $request)
         $query->where('location', 'like', "%{$request->location}%");
     }
 
-    
+  
     if ($request->filled('search')) {
         $query->where(function ($q) use ($request) {
             $q->where('title', 'like', "%{$request->search}%")
@@ -183,22 +184,38 @@ public function activities(Request $request)
         });
     }
 
-    $activities = $query->latest()->paginate(5);
     
+    $activities = $query->orderBy('activity_date', 'asc')
+                        ->orderBy('activity_time', 'asc')
+                        ->paginate(5);
 
     $categories = Category::all();
-    $locations = Activity::select('location')->distinct()->pluck('location');
+    $locations = Activity::where('status', 'active')
+                         ->select('location')
+                         ->distinct()
+                         ->pluck('location');
 
-    return view('user.activities', compact(
-        'activities', 'categories', 'locations'
-    ));
+    return view('user.activities', compact('activities', 'categories', 'locations'));
 }
 
    
 
+// public function activity_details($id)
+// {
+//     $activity = Activity::with(['host', 'category', 'reviews.user'])->findOrFail($id);
+
+//     return view('user.activity_details', compact('activity'));
+// }
 public function activity_details($id)
 {
-    $activity = Activity::with(['host', 'category', 'reviews.user'])->findOrFail($id);
+    $activity = Activity::with([
+        'host', 
+        'category', 
+        'reviews.user',
+        'images',          
+        'primaryImage'
+             
+    ])->findOrFail($id);
 
     return view('user.activity_details', compact('activity'));
 }
@@ -243,6 +260,13 @@ public function bookings()
 public function showBookingForm($activityId)
 {
     $activity = Activity::findOrFail($activityId);
+
+    
+    $activityDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $activity->activity_date . ' ' . $activity->activity_time);
+    if ($activityDateTime->isPast()) {
+        return redirect()->route('user.activities')->withErrors('This activity has already passed.');
+    }
+
     return view('user.booking_form', compact('activity'));
 }
 
@@ -250,23 +274,27 @@ public function createBooking(Request $request, $activityId)
 {
     $activity = Activity::findOrFail($activityId);
 
+
+    $activityDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $activity->activity_date . ' ' . $activity->activity_time);
+    if ($activityDateTime->isPast()) {
+        return back()->withErrors('Cannot book a past activity.');
+    }
+
     $validated = $request->validate([
-        'booking_date' => ['required', 'date'],
-        'booking_time' => ['required', 'date_format:H:i'],
         'num_participants' => ['required', 'integer', 'min:1', 'max:' . $activity->max_participants],
-        'total_amount' => ['required', 'numeric', 'min:0'],
     ]);
 
     $totalAmount = $activity->price * $validated['num_participants'];
 
+   
     $booking = Booking::create([
-        'user_id' => Auth::id(),         
+        'user_id' => Auth::id(),
         'activity_id' => $activity->id,
-        'booking_date' => $validated['booking_date'],
-        'booking_time' => $validated['booking_time'],
+        'booking_date' => $activity->activity_date, 
+        'booking_time' => $activity->activity_time, 
         'num_participants' => $validated['num_participants'],
         'total_amount' => $totalAmount,
-        'status' => 'pending',           
+        'status' => 'pending',
     ]);
 
     return redirect()->route('user.bookings')->with('success', 'The activity has been booked successfully!');
@@ -276,27 +304,25 @@ public function createBooking(Request $request, $activityId)
 public function cancelBooking($bookingId)
 {
     $booking = Booking::where('id', $bookingId)
-                     ->where('user_id', auth()->id()) 
+                     ->where('user_id', auth()->id())
                      ->firstOrFail();
 
-    
     if ($booking->status === 'cancelled') {
         return back()->with('error', 'Your reservation has already been cancelled.');
     }
 
-    if ($booking->booking_date < now()) {
-        return back()->with('error', 'The reservation cannot be canceled after it has been started.');
+    // دمج التاريخ والوقت للحجز
+    $bookingDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $booking->booking_date . ' ' . $booking->booking_time);
+    if ($bookingDateTime->isPast()) {
+        return back()->with('error', 'The reservation cannot be canceled after it has started.');
     }
 
-    
     $oneHourAgo = Carbon::now()->subHour();
     if ($booking->created_at < $oneHourAgo) {
         return back()->with('error', 'A reservation cannot be canceled more than an hour after the reservation has been made.');
     }
 
-    
     $booking->update(['status' => 'cancelled']);
-
     return redirect()->route('user.bookings')->with('success', 'Your reservation has been successfully cancelled.');
 }
 public function submitReview(Request $request, $bookingId)
@@ -308,20 +334,23 @@ public function submitReview(Request $request, $bookingId)
 
     $booking = Booking::findOrFail($bookingId);
 
-    
+    // تأكد أن المستخدم هو صاحب الحجز
     if ($booking->user_id !== auth()->id()) {
         abort(403);
     }
 
-  
+    // تأكد أنه لم يتم التقييم مسبقًا
     if ($booking->review) {
         return redirect()->back()->withErrors(['error' => 'This activity has already been rated.']);
     }
 
-    
-    $booking->update([
-        'review' => $request->review_text,
+    // إنشاء التقييم في جدول reviews
+    Review::create([
+        'user_id' => auth()->id(),
+        'activity_id' => $booking->activity_id,
+        'booking_id' => $booking->id,
         'rating' => $request->rating,
+        'comment' => $request->review_text,
     ]);
 
     return redirect()->back()->with('success', 'Thank you for your review!');

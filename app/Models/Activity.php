@@ -11,7 +11,7 @@ class Activity extends Model
 
     protected $fillable = [
         'title', 'description', 'location', 'price',
-        'max_participants', 'category_id', 'host_id', 'status',
+        'max_participants', 'category_id', 'host_id', 'status', 'activity_date', 'activity_time',
     ];
 
     protected $casts = [
@@ -49,8 +49,13 @@ class Activity extends Model
     }
 
     // علاقة الصورة الأساسية فقط
-    public function primaryImage()
-    {
-        return $this->hasOne(ActivityImage::class)->where('is_primary', true);
-    }
+   public function primaryImage()
+{
+    return $this->hasOne(ActivityImage::class)->where('is_primary', true);
+}
+    public function isFullyBooked()
+{
+    $confirmedBookings = $this->bookings()->where('status', 'confirmed')->count();
+    return $confirmedBookings >= $this->max_participants;
+}
 }
