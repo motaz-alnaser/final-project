@@ -13,36 +13,7 @@
         </div>
     </div>
 
-    <!-- Navigation Header -->
-    <header class="header" id="header">
-        <nav class="nav-container">
-            <a href="{{ route('home') }}" class="logo">
-                <div class="logo-icon">
-                    <div class="logo-prism">
-                        <div class="prism-shape"></div>
-                    </div>
-                </div>
-                <span class="logo-text">
-                    <span class="prism">PRISM</span>
-                    <span class="flux">FLUX</span>
-                </span>
-            </a>
-            
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="{{ route('home') }}" class="nav-link">Home</a></li>
-                <li><a href="{{ route('user.activities') }}" class="nav-link">Activities</a></li>
-                <li><a href="#stats" class="nav-link">Metrics</a></li>
-                <li><a href="#skills" class="nav-link">Arsenal</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
-            </ul>
-            
-            <div class="menu-toggle" id="menuToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </nav>
-    </header>
+    
 
     <!-- Login Section -->
     <section class="hero" style="min-height: 100vh; padding: 120px 20px 80px; display: flex; align-items: center; justify-content: center;">

@@ -109,16 +109,7 @@
         </nav>
     </header>
 
-    <!-- Page Header -->
-    <section class="hero" style="min-height: 40vh; padding: 120px 20px 60px;">
-        <div class="philosophy-container">
-            <div class="prism-line"></div>
-            <h1 class="philosophy-headline" style="font-size: 48px;">Discover Experiences</h1>
-            <p class="philosophy-subheading" style="max-width: 700px; margin: 0 auto;">
-                Browse our curated collection of immersive activities across categories.
-            </p>
-        </div>
-    </section>
+    
 
     <!-- Filters -->
     <section class="stats-section" style="padding: 60px 30px;">
