@@ -49,10 +49,10 @@ public function earnings()
 {
     // بتجيب النشاط والارباح
     $activities = Activity::withSum(['bookings as total_earnings' => function ($query) {
-        $query->where('status', 'confirmed');
+        $query->where('status', 'pending');
     }], 'total_amount')
     ->withCount(['bookings as confirmed_bookings_count' => function ($query) {
-        $query->where('status', 'confirmed');
+        $query->where('status', 'pending');
     }])
     ->with('host:id,name')
     ->latest()
@@ -66,6 +66,9 @@ public function earnings()
 
     return view('admin.earnings', compact('activities', 'totalEarnings', 'platformFees', 'netEarnings'));
 }
+
+
+
 public function editUser($userId)
 {
     $user = User::findOrFail($userId);
@@ -107,6 +110,10 @@ public function deleteUser($userId)
 
     return redirect()->route('admin.users')->with('success', 'The user has been deleted successfully.');
 }
+
+
+
+
 public function users(Request $request)
 {
     $query = User::query();

@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PaymentController;
+
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 
 /*admin aouts*/
@@ -111,7 +112,40 @@ Route::post('/booking/review/{booking}', [UserController::class, 'submitReview']
 
 
 
-// Payment Routes
-Route::get('/booking/payment/{booking}', [PaymentController::class, 'create'])->name('booking_payment');
-Route::post('/booking/payment/{booking}', [PaymentController::class, 'store'])->name('booking_payment.store');
-Route::post('/booking/payment/confirm', [PaymentController::class, 'confirm'])->name('booking_payment.confirm');
+
+
+
+
+// ... مسارات أخرى موجودة في الملف
+
+// ✅ البايمنت راوتات (مرتبة ومرتبطة بالـ auth)
+Route::middleware('auth')->group(function () {
+    Route::get('/booking/payment/{booking}', [PaymentController::class, 'create'])
+        ->name('booking_payment.create');
+    
+    Route::post('/booking/payment/{booking}', [PaymentController::class, 'store'])
+        ->name('booking_payment.store');
+    
+   // routes/web.php
+
+Route::get('/payment/confirm', [PaymentController::class, 'confirm'])
+    ->name('booking_payment.confirm');
+});
+
+// ✅ مسارات البايمنت الأخرى (مرتبة)
+Route::middleware('auth')->group(function () {
+    Route::get('/activities/{activity}/payment', [UserController::class, 'showPaymentForm'])
+        ->name('booking.payment.form');
+    
+    Route::post('/activities/{activity}/payment', [UserController::class, 'processPaymentForm'])
+        ->name('booking.payment.process');
+    
+    Route::post('/activities/{activity}/booking-session', [UserController::class, 'storeBookingSession'])
+        ->name('booking.session.store');
+    
+    Route::get('/activities/{activity}/payment-summary', [UserController::class, 'showPaymentSummary'])
+        ->name('booking.payment.summary');
+    
+    Route::post('/activities/{activity}/process-payment', [UserController::class, 'processPayment'])
+        ->name('booking.payment.process');
+});

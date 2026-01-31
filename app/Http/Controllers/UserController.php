@@ -357,4 +357,152 @@ public function submitReview(Request $request, $bookingId)
 }
 
 
+
+
+
+// عرض صفحة الدفع المؤقتة
+public function showPaymentForm(Request $request, $activityId)
+{
+    $activity = Activity::findOrFail($activityId);
+
+    // إذا كان الطلب POST (حفظ البيانات في Session)
+    if ($request->isMethod('post')) {
+        $validated = $request->validate([
+            'num_participants' => 'required|integer|min:1|max:' . $activity->max_participants,
+            'total_amount' => 'required|numeric',
+            'activity_id' => 'required|exists:activities,id',
+        ]);
+
+        // حفظ البيانات في Session
+        session(['booking_data' => [
+            'num_participants' => $validated['num_participants'],
+            'total_amount' => $validated['total_amount'],
+            'activity_id' => $validated['activity_id'],
+        ]]);
+
+        return response()->json(['success' => true]);
+    }
+
+    // إذا كان الطلب GET (عرض الصفحة)
+    $activityDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $activity->activity_date . ' ' . $activity->activity_time);
+    if ($activityDateTime->isPast()) {
+        return redirect()->route('user.activities')->withErrors('This activity has already passed.');
+    }
+
+    $bookingData = session('booking_data');
+    
+    if (!$bookingData || $bookingData['activity_id'] != $activityId) {
+        return redirect()->route('booking.create', $activityId)->withErrors('Please fill the booking form first.');
+    }
+
+    return view('user.payment_form', compact('activity', 'bookingData'));
+}
+
+// معالجة الدفع وتخزين الحجز
+public function processPaymentForm(Request $request, $activityId)
+{
+    $activity = Activity::findOrFail($activityId);
+
+    // التحقق من Session
+    $bookingData = session('booking_data');
+    
+    if (!$bookingData || $bookingData['activity_id'] != $activityId) {
+        return redirect()->route('booking.create', $activityId)->withErrors('Session expired. Please try again.');
+    }
+
+    // التحقق من صحة البيانات
+    $activityDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $activity->activity_date . ' ' . $activity->activity_time);
+    if ($activityDateTime->isPast()) {
+        session()->forget('booking_data');
+        return back()->withErrors('Cannot book a past activity.');
+    }
+
+    // التحقق من عدد المشاركين
+    if ($bookingData['num_participants'] > $activity->max_participants) {
+        session()->forget('booking_data');
+        return back()->withErrors('Number of participants exceeds maximum limit.');
+    }
+
+    // حساب المبلغ الإجمالي
+    $totalAmount = $activity->price * $bookingData['num_participants'];
+
+    // إنشاء الحجز في قاعدة البيانات
+    $booking = Booking::create([
+        'user_id' => Auth::id(),
+        'activity_id' => $activity->id,
+        'booking_date' => $activity->activity_date,
+        'booking_time' => $activity->activity_time,
+        'num_participants' => $bookingData['num_participants'],
+        'total_amount' => $totalAmount,
+        'status' => 'pending',
+    ]);
+
+    // حذف البيانات من Session
+    session()->forget('booking_data');
+
+    // إعادة توجيه لصفحة الدفع مع معرف الحجز
+    return redirect()->route('booking_payment.create', $booking->id);
+}
+
+
+// حفظ بيانات الحجز في Session
+public function storeBookingSession(Request $request, $activityId)
+{
+    $activity = Activity::findOrFail($activityId);
+    
+    $validated = $request->validate([
+        'num_participants' => 'required|integer|min:1|max:' . $activity->max_participants,
+    ]);
+
+    $totalAmount = $activity->price * $validated['num_participants'];
+
+    session(['booking_data' => [
+        'num_participants' => $validated['num_participants'],
+        'total_amount' => $totalAmount,
+        'activity_id' => $activityId,
+    ]]);
+
+    return redirect()->route('booking.payment.summary', $activityId);
+}
+
+// عرض صفحة ملخص الدفع
+public function showPaymentSummary($activityId)
+{
+    $activity = Activity::findOrFail($activityId);
+    $bookingData = session('booking_data');
+
+    if (!$bookingData || $bookingData['activity_id'] != $activityId) {
+        return redirect()->route('booking.create', $activityId)->withErrors('Session expired. Please try again.');
+    }
+
+    return view('user.payment_form', compact('activity', 'bookingData'));
+}
+
+// معالجة الدفع الفعلي وتخزين الحجز
+public function processPayment(Request $request, $activityId)
+{
+    $activity = Activity::findOrFail($activityId);
+    $bookingData = session('booking_data');
+
+    if (!$bookingData || $bookingData['activity_id'] != $activityId) {
+        return redirect()->route('booking.create', $activityId)->withErrors('Session expired. Please try again.');
+    }
+
+    $totalAmount = $activity->price * $bookingData['num_participants'];
+
+    $booking = Booking::create([
+        'user_id' => Auth::id(),
+        'activity_id' => $activityId,
+        'booking_date' => $activity->activity_date,
+        'booking_time' => $activity->activity_time,
+        'num_participants' => $bookingData['num_participants'],
+        'total_amount' => $totalAmount,
+        'status' => 'pending',
+    ]);
+
+    session()->forget('booking_data');
+
+    return redirect()->route('booking_payment', $booking->id);
+}
+
 }

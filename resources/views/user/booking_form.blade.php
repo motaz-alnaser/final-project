@@ -95,47 +95,47 @@
         </div>
     </section>
 
-    <!-- Booking Form -->
-    <section class="stats-section" style="padding: 60px 30px;">
-        <div class="philosophy-container">
-            <div class="stat-card" style="padding: 40px;">
-                <form method="POST" action="{{ route('booking.store', $activity->id) }}">
-                    @csrf
+  <!-- Booking Form -->
+<section class="stats-section" style="padding: 60px 30px;">
+    <div class="philosophy-container">
+        <div class="stat-card" style="padding: 40px;">
+            <form method="POST" action="{{ route('booking.session.store', $activity->id) }}">
+    @csrf
+    <div class="form-group">
+        <label for="num_participants" class="form-label">Number of Participants (Max: {{ $activity->max_participants }})</label>
+        <input type="number" id="num_participants" name="num_participants" min="1" max="{{ $activity->max_participants }}" required class="form-input">
+    </div>
 
-                   
+    <div class="form-group">
+        <label for="total_amount" class="form-label">Total Amount ({{ $activity->price }} JOD per person)</label>
+        <input type="number" id="total_amount" name="total_amount_display" step="0.01" readonly class="form-input" value="{{ $activity->price }}">
+        <!-- ملاحظة: ما بحناج نرسل total_amount للخادم -->
+    </div>
 
-                   
-
-                    <div class="form-group">
-                        <label for="num_participants" class="form-label">Number of Participants (Max: {{ $activity->max_participants }})</label>
-                        <input type="number" id="num_participants" name="num_participants" min="1" max="{{ $activity->max_participants }}" required class="form-input">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="total_amount" class="form-label">Total Amount ({{ $activity->price }} JOD per person)</label>
-                        <input type="number" id="total_amount" name="total_amount" step="0.01" readonly class="form-input" value="{{ $activity->price }}">
-                    </div>
-
-                    <button type="submit" class="card-cta">Confirm Booking</button>
-                </form>
-            </div>
+    <button type="submit" class="card-cta">Proceed to Payment</button>
+</form>
         </div>
-    </section>
+    </div>
+</section>
 @endsection
 @section('scripts')
-        <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const loader = document.getElementById('loader');
-                loader.classList.add('hidden');
-            }, 1000);
-        });
+    @section('scripts')
+<script>
+    // مسح الـ loader فور تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', () => {
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.classList.add('hidden');
+        }
+    });
 
-        document.getElementById('num_participants').addEventListener('input', function() {
-            const pricePerPerson = {{ $activity->price }};
-            const numParticipants = parseInt(this.value) || 0;
-            const totalAmount = pricePerPerson * numParticipants;
-            document.getElementById('total_amount').value = totalAmount.toFixed(2);
-        });
-    </script>
+    // تحديث مبلغ الحجز
+    document.getElementById('num_participants').addEventListener('input', function() {
+        const pricePerPerson = {{ $activity->price }};
+        const numParticipants = parseInt(this.value) || 0;
+        const totalAmount = pricePerPerson * numParticipants;
+        document.getElementById('total_amount').value = totalAmount.toFixed(2);
+    });
+</script>
+@endsection
     @endsection

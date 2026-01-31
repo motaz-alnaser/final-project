@@ -43,48 +43,8 @@
         </div>
     </div>
 
-    <!-- Navigation Header -->
-    <header class="header" id="header">
-        <nav class="nav-container">
-            <a href="{{ route('home') }}" class="logo">
-                <div class="logo-icon">
-                    <div class="logo-prism">
-                        <div class="prism-shape"></div>
-                    </div>
-                </div>
-                <span class="logo-text">
-                    <span class="prism">PRISM</span>
-                    <span class="flux">FLUX</span>
-                </span>
-            </a>
-            
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="{{ route('home') }}" class="nav-link">Home</a></li>
-                <li><a href="{{ route('user.activities') }}" class="nav-link">Activities</a></li>
-                <li><a href="#stats" class="nav-link">Metrics</a></li>
-                <li><a href="#skills" class="nav-link">Arsenal</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
-            </ul>
-            
-            <div class="menu-toggle" id="menuToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </nav>
-    </header>
+  
 
-    <!-- Breadcrumb -->
-    <div style="padding: 20px 30px; background: rgba(18, 18, 18, 0.95); border-bottom: 1px solid var(--metal-dark);">
-        <div class="philosophy-container">
-            <p style="color: var(--text-secondary);">
-                <a href="{{ route('home') }}" style="color: var(--accent-cyan); text-decoration: none;">Home</a> 
-                > 
-                <a href="{{ route('user.activities') }}" style="color: var(--accent-cyan); text-decoration: none;">Activities</a> 
-                > {{ $activity->title }}
-            </p>
-        </div>
-    </div>
 
     <!-- Activity Details -->
     <section class="stats-section" style="padding: 60px 30px;">
@@ -114,21 +74,7 @@
                         <span class="tech-badge" style="background: rgba(153, 69, 255, 0.1); border-color: var(--accent-purple);">
                             {{ $activity->category?->name_en ?? 'General' }}
                         </span>
-                        <div class="rating-stars" style="color: var(--accent-yellow); display: flex; align-items: center; gap: 5px;">
-                            <span>{{ number_format($activity->rating ?? 0, 1) }}</span>
-                            @for ($i = 0; $i < 5; $i++)
-                                @if ($i < floor($activity->rating ?? 0))
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                    </svg>
-                                @else
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                    </svg>
-                                @endif
-                            @endfor
-                            <span>({{ $activity->reviews_count ?? 0 }} reviews)</span>
-                        </div>
+                     
                     </div>
                     <h1 class="philosophy-headline" style="font-size: 36px; margin-bottom: 20px; background: linear-gradient(135deg, var(--text-primary), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ $activity->title }}</h1>
                     <p style="color: var(--text-secondary); margin-bottom: 30px; display: flex; align-items: center; gap: 10px;">
@@ -216,24 +162,7 @@
             <div class="stat-card" style="padding: 30px;">
                 <h2 class="section-title">Reviews & Ratings</h2>
                 <div style="display: flex; align-items: center; gap: 30px; margin-bottom: 30px;">
-                    <div style="font-size: 48px; font-weight: 900; color: var(--accent-cyan);">{{ number_format($activity->rating ?? 0, 1) }}</div>
-                    <div>
-                        <div class="rating-stars" style="color: var(--accent-yellow); display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
-                            @for ($i = 0; $i < 5; $i++)
-                                @if ($i < floor($activity->rating ?? 0))
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                    </svg>
-                                @else
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                    </svg>
-                                @endif
-                            @endfor
-                        </div>
-                        <p style="color: var(--text-secondary);">Based on {{ $activity->reviews_count ?? 0 }} reviews</p>
-                    </div>
-                </div>
+               
 
                 @forelse($activity->reviews as $review)
                     <div class="review-card">

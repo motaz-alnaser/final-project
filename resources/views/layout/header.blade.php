@@ -3,16 +3,15 @@
     <nav class="nav-container">
         <a href="#home" class="logo">
             <div class="logo-icon">
-                <img src="{{ asset('images/downloadlogo.png') }}" alt="PRISM FLUX Logo" class="logo-img">
+                <img src="{{ asset('images/downloadlogo-removebg-preview (1).png') }}" alt="PRISM FLUX Logo" class="logo-img">
             </div>
          
         </a>
         
         <ul class="nav-menu" id="navMenu">
-            <li><a href="#home" class="nav-link active">Home</a></li>
+            <li><a href="{{ route('home') }}" class="nav-link active">Home</a></li>           
             <li><a href="#about" class="nav-link">About</a></li>
             <li><a href="#stats" class="nav-link">Metrics</a></li>
-            <li><a href="#skills" class="nav-link">Tools</a></li>
             <li><a href="#contact" class="nav-link">Contact</a></li>
             <li><a href="{{ route('user.activities') }}" class="nav-link nav-link-special">Activities</a></li>
             

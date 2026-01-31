@@ -55,51 +55,13 @@
         </div>
     </div>
 
-    <!-- Navigation Header -->
-    <header class="header" id="header">
-        <nav class="nav-container">
-            <a href="{{ route('home') }}" class="logo">
-                <div class="logo-icon">
-                    <div class="logo-prism">
-                        <div class="prism-shape"></div>
-                    </div>
-                </div>
-                <span class="logo-text">
-                    <span class="prism">PRISM</span>
-                    <span class="flux">FLUX</span>
-                </span>
-            </a>
-            
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="{{ route('home') }}" class="nav-link">Home</a></li>
-                <li><a href="{{ route('user.activities') }}" class="nav-link">Activities</a></li>
-                <li><a href="#stats" class="nav-link">Metrics</a></li>
-                <li><a href="#skills" class="nav-link">Arsenal</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
-            </ul>
-            
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="display: flex; align-items: center; gap: 10px; color: var(--text-primary);">
-                    <img src="{{ $user->avatar_url ?? asset('images/default-avatar.jpg') }}" alt="{{ $user->name }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                    <span>{{ $user->name }}</span>
-                </div>
-                <div class="menu-toggle" id="menuToggle">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    
 
     <!-- Profile Header -->
     <section class="hero" style="min-height: 30vh; padding: 120px 20px 60px; background: linear-gradient(180deg, var(--primary-black) 0%, rgba(153, 69, 255, 0.05) 100%);">
         <div class="philosophy-container">
             <div style="display: flex; align-items: end; gap: 30px;">
                 <div style="position: relative;">
-                    <img src="{{ $user->avatar_url ?? asset('images/default-avatar.jpg') }}" alt="{{ $user->name }}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-purple);">
-                    <button style="position: absolute; bottom: 0; right: 0; background: var(--accent-purple); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Change Avatar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                         </svg>

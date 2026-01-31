@@ -110,13 +110,7 @@
                         </svg>
                         Continue with Google
                     </button>
-                    <button class="card-cta" style="background: linear-gradient(135deg, #000000, #333333); padding: 12px;" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 10px;">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                            <circle cx="12" cy="9" r="2"/>
-                        </svg>
-                        Continue with Apple
-                    </button>
+                    
                 </div>
 
                 <p style="text-align: center; margin-top: 30px; color: var(--text-secondary);">

@@ -57,6 +57,40 @@
             padding: 25px;
             margin-bottom: 20px;
         }
+        /* ✨ رسائل النجاح والخطأ */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.4s ease;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+        .alert-icon {
+            font-size: 20px;
+        }
     </style>
 @endsection
 
@@ -73,43 +107,6 @@
         </div>
     </div>
 
-    <!-- Navigation Header -->
-    <header class="header" id="header">
-        <nav class="nav-container">
-            <a href="{{ route('home') }}" class="logo">
-                <div class="logo-icon">
-                    <div class="logo-prism">
-                        <div class="prism-shape"></div>
-                    </div>
-                </div>
-                <span class="logo-text">
-                    <span class="prism">PRISM</span>
-                    <span class="flux">FLUX</span>
-                </span>
-            </a>
-            
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="{{ route('home') }}" class="nav-link">Home</a></li>
-                <li><a href="{{ route('user.activities') }}" class="nav-link">Activities</a></li>
-                <li><a href="#stats" class="nav-link">Metrics</a></li>
-                <li><a href="#skills" class="nav-link">Arsenal</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
-            </ul>
-            
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="display: flex; align-items: center; gap: 10px; color: var(--text-primary);">
-                    <img src="{{ auth()->user()->avatar_url ?? asset('images/default-avatar.jpg') }}" alt="{{ auth()->user()->name }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                    <span>{{ auth()->user()->name }}</span>
-                </div>
-                <div class="menu-toggle" id="menuToggle">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </nav>
-    </header>
-
     <!-- Page Header -->
     <section class="hero" style="min-height: 30vh; padding: 120px 20px 60px;">
         <div class="philosophy-container">
@@ -121,62 +118,81 @@
         </div>
     </section>
 
+    <!-- ✨ رسائل النجاح والخطأ -->
+    @if(session('success'))
+        <section class="stats-section" style="padding: 20px 30px 0;">
+            <div class="philosophy-container">
+                <div class="alert alert-success">
+                    <span class="alert-icon">✅</span>
+                    <span>{{ session('success') }}</span>
+                </div>
+            </div>
+        </section>
+    @endif
+
+    @if(session('error'))
+        <section class="stats-section" style="padding: 20px 30px 0;">
+            <div class="philosophy-container">
+                <div class="alert alert-error">
+                    <span class="alert-icon">⚠️</span>
+                    <span>{{ session('error') }}</span>
+                </div>
+            </div>
+        </section>
+    @endif
+
     <!-- Bookings Content -->
-    <section class="stats-section" style="padding: 60px 30px;">
+    <section class="stats-section" style="padding: 40px 30px 60px;">
         <div class="philosophy-container">
             <!-- Tabs -->
-            <div style="display: flex; gap: 20px; margin-bottom: 40px; flex-wrap: wrap;">
-                <button class="category-tab active" data-tab="upcoming" onclick="switchTab('upcoming')">Upcoming</button>
-                <button class="category-tab" data-tab="past" onclick="switchTab('past')">Past</button>
-                <button class="category-tab" data-tab="cancelled" onclick="switchTab('cancelled')">Cancelled</button>
-            </div>
+           
 
             <!-- Upcoming Bookings -->
-<div class="bookings-tab active" id="upcoming">
-    @forelse($upcomingBookings as $booking)
-        <div class="stat-card booking-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div class="booking-status status-{{ strtolower($booking->status) }}">{{ ucfirst($booking->status) }}</div>
-                <div style="color: var(--text-secondary);">{{ $booking->booking_date->format('F j, Y') }}</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 120px 1fr auto; gap: 20px;">
-                <div class="card-image" style="width: 100%; height: 100px; border-radius: 10px;">
-                    <img src="{{ asset($booking->activity->image_url ?? 'images/default-activity.jpg') }}" alt="{{ $booking->activity->title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                <div>
-                    <h3 class="card-title" style="font-size: 20px; margin-bottom: 10px;">{{ $booking->activity->title }}</h3>
-                    <p class="stat-description" style="margin-bottom: 10px;">{{ $booking->activity->location }}</p>
-                    <div style="color: var(--text-secondary);">{{ $booking->time ?? 'Time not set' }}</div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
-                    <div style="text-align: right;">
-                        <div style="color: var(--text-secondary); font-size: 14px;">Booking #{{ $booking->id }}</div>
-                        <div class="stat-number" style="font-size: 20px; color: var(--accent-cyan);">{{ $booking->total_price ?? $booking->activity->price }} JOD</div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-@if($booking->status !== 'cancelled' && $booking->booking_date > now())
-    @php
-        $oneHourAfterCreation = $booking->created_at->addHour();
-        $canCancel = now()->lt($oneHourAfterCreation);
-    @endphp
-    @if($canCancel)
-        <form method="POST" action="{{ route('booking.cancel', $booking->id) }}" style="display:inline;">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="card-cta" style="padding: 8px 20px; font-size: 14px; background: linear-gradient(135deg, #ef4444, #dc2626);">
-                Cancel Booking
-            </button>
-        </form>
-    @else
-        <button class="card-cta" style="padding: 8px 20px; font-size: 14px; background: #6b7280;" disabled>
-            Cannot Cancel (More than 1 hour passed)
-        </button>
-    @endif
-@else
-    <button class="card-cta" style="padding: 8px 20px; font-size: 14px; background: #6b7280;" disabled>
-        {{ $booking->status === 'cancelled' ? 'Cancelled' : 'Started' }}
-    </button>
-@endif
+            <div class="bookings-tab active" id="upcoming">
+                @forelse($upcomingBookings as $booking)
+                    <div class="stat-card booking-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <div class="booking-status status-{{ strtolower($booking->status) }}">{{ ucfirst($booking->status) }}</div>
+                            <div style="color: var(--text-secondary);">{{ $booking->booking_date->format('F j, Y') }}</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 120px 1fr auto; gap: 20px;">
+                            <div class="card-image" style="width: 100%; height: 100px; border-radius: 10px;">
+                                <img src="{{ $booking->activity->primaryImage ? asset('storage/' . $booking->activity->primaryImage->image_url) : asset('images/default-activity.jpg') }}" alt="{{ $booking->activity->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div>
+                                <h3 class="card-title" style="font-size: 20px; margin-bottom: 10px;">{{ $booking->activity->title }}</h3>
+                                <p class="stat-description" style="margin-bottom: 10px;">{{ $booking->activity->location }}</p>
+                                <div style="color: var(--text-secondary);">{{ $booking->time ?? 'Time not set' }}</div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
+                                <div style="text-align: right;">
+                                    <div style="color: var(--text-secondary); font-size: 14px;">Booking #{{ $booking->id }}</div>
+                                    <div class="stat-number" style="font-size: 20px; color: var(--accent-cyan);">{{ $booking->total_price ?? $booking->activity->price }} JOD</div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    @if($booking->status !== 'cancelled' && $booking->booking_date > now())
+                                        @php
+                                            $oneHourAfterCreation = $booking->created_at->addHour();
+                                            $canCancel = now()->lt($oneHourAfterCreation);
+                                        @endphp
+                                        @if($canCancel)
+                                            <form method="POST" action="{{ route('booking.cancel', $booking->id) }}" style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="card-cta" style="padding: 8px 20px; font-size: 14px; background: linear-gradient(135deg, #ef4444, #dc2626);">
+                                                    Cancel Booking
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button class="card-cta" style="padding: 8px 20px; font-size: 14px; background: #6b7280;" disabled>
+                                                Cannot Cancel (More than 1 hour passed)
+                                            </button>
+                                        @endif
+                                    @else
+                                        <button class="card-cta" style="padding: 8px 20px; font-size: 14px; background: #6b7280;" disabled>
+                                            {{ $booking->status === 'cancelled' ? 'Cancelled' : 'Started' }}
+                                        </button>
+                                    @endif
                                    
                                     @if(!$booking->review)
                                         <button class="card-cta" style="padding: 8px 20px; font-size: 14px;" onclick="openReviewModal({{ $booking->id }})">Rate Activity</button>
@@ -191,84 +207,88 @@
                     </div>
                 @endforelse
             </div>
+
             <!-- Past Bookings -->
-<div class="bookings-tab" id="past">
-    @forelse($pastBookings as $booking)
-        <div class="stat-card booking-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div class="booking-status status-{{ strtolower($booking->status) }}">{{ ucfirst($booking->status) }}</div>
-                <div style="color: var(--text-secondary);">{{ $booking->booking_date->format('F j, Y') }}</div> <!-- ✅ date إلى booking_date -->
-            </div>
-            <div style="display: grid; grid-template-columns: 120px 1fr auto; gap: 20px;">
-                <div class="card-image" style="width: 100%; height: 100px; border-radius: 10px;">
-                    <img src="{{ asset($booking->activity->image_url ?? 'images/default-activity.jpg') }}" alt="{{ $booking->activity->title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                <div>
-                    <h3 class="card-title" style="font-size: 20px; margin-bottom: 10px;">{{ $booking->activity->title }}</h3>
-                    <p class="stat-description" style="margin-bottom: 10px;">{{ $booking->activity->location }}</p>
-                    <div style="color: var(--text-secondary);">{{ $booking->time ?? 'Time not set' }}</div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
-                    <div style="text-align: right;">
-                        <div style="color: var(--text-secondary); font-size: 14px;">Booking #{{ $booking->id }}</div>
-                        <div class="stat-number" style="font-size: 20px; color: var(--accent-cyan);">{{ $booking->total_price ?? $booking->activity->price }} JOD</div>
+            <div class="bookings-tab" id="past">
+                @forelse($pastBookings as $booking)
+                    <div class="stat-card booking-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <div class="booking-status status-{{ strtolower($booking->status) }}">{{ ucfirst($booking->status) }}</div>
+                            <div style="color: var(--text-secondary);">{{ $booking->booking_date->format('F j, Y') }}</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 120px 1fr auto; gap: 20px;">
+                            <div class="card-image" style="width: 100%; height: 100px; border-radius: 10px;">
+                                <img src="{{ $booking->activity->primaryImage ? asset('storage/' . $booking->activity->primaryImage->image_url) : asset('images/default-activity.jpg') }}" alt="{{ $booking->activity->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div>
+                                <h3 class="card-title" style="font-size: 20px; margin-bottom: 10px;">{{ $booking->activity->title }}</h3>
+                                <p class="stat-description" style="margin-bottom: 10px;">{{ $booking->activity->location }}</p>
+                                <div style="color: var(--text-secondary);">{{ $booking->time ?? 'Time not set' }}</div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
+                                <div style="text-align: right;">
+                                    <div style="color: var(--text-secondary); font-size: 14px;">Booking #{{ $booking->id }}</div>
+                                    <div class="stat-number" style="font-size: 20px; color: var(--accent-cyan);">{{ $booking->total_price ?? $booking->activity->price }} JOD</div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    @if(!$booking->review)
+                                        <button class="card-cta" style="padding: 8px 20px; font-size: 14px;" onclick="openReviewModal({{ $booking->id }})">Rate Activity</button>
+                                    @else
+                                        <button class="card-cta" style="padding: 8px 20px; font-size: 14px; background: var(--carbon-medium);" disabled>Rated</button>
+                                    @endif
+                                    <a href="{{ route('user.activity_details', $booking->activity->id) }}" class="card-cta" style="padding: 8px 20px; font-size: 14px;">View Details</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        @if(!$booking->review)
-                            <button class="card-cta" style="padding: 8px 20px; font-size: 14px;" onclick="openReviewModal({{ $booking->id }})">Rate Activity</button>
-                        @else
-                            <button class="card-cta" style="padding: 8px 20px; font-size: 14px; background: var(--carbon-medium);" disabled>Rated</button>
-                        @endif
-                        <a href="{{ route('activity.show', $booking->activity->id) }}" class="card-cta" style="padding: 8px 20px; font-size: 14px;">View Details</a>
+                @empty
+                    <div class="stat-card" style="padding: 40px; text-align: center;">
+                        <p>You have no past bookings.</p>
                     </div>
-                </div>
+                @endforelse
             </div>
-        </div>
-    @empty
-        <div class="stat-card" style="padding: 40px; text-align: center;">
-            <p>You have no past bookings.</p>
-        </div>
-    @endforelse
-</div>
+
             <!-- Cancelled Bookings -->
-<div class="bookings-tab" id="cancelled">
-    @forelse($cancelledBookings as $booking)
-        <div class="stat-card booking-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div class="booking-status status-{{ strtolower($booking->status) }}">{{ ucfirst($booking->status) }}</div>
-                <div style="color: var(--text-secondary);">{{ $booking->updated_at->format('F j, Y') }}</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 120px 1fr auto; gap: 20px;">
-                <div class="card-image" style="width: 100%; height: 100px; border-radius: 10px;">
-                    <img src="{{ asset($booking->activity->image_url ?? 'images/default-activity.jpg') }}" alt="{{ $booking->activity->title }}" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                <div>
-                    <h3 class="card-title" style="font-size: 20px; margin-bottom: 10px;">{{ $booking->activity->title }}</h3>
-                    <p class="stat-description" style="margin-bottom: 10px;">{{ $booking->activity->location }}</p>
-                    <div style="color: var(--text-secondary);">{{ $booking->time ?? 'Time not set' }}</div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
-                    <div style="text-align: right;">
-                        <div style="color: var(--text-secondary); font-size: 14px;">Booking #{{ $booking->id }}</div>
-                        <div class="stat-number" style="font-size: 20px; color: var(--accent-cyan);">{{ $booking->total_price ?? $booking->activity->price }} JOD</div>
+            <div class="bookings-tab" id="cancelled">
+                @forelse($cancelledBookings as $booking)
+                    <div class="stat-card booking-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <div class="booking-status status-{{ strtolower($booking->status) }}">{{ ucfirst($booking->status) }}</div>
+                            <div style="color: var(--text-secondary);">{{ $booking->updated_at->format('F j, Y') }}</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 120px 1fr auto; gap: 20px;">
+                            <div class="card-image" style="width: 100%; height: 100px; border-radius: 10px;">
+                                <img src="{{ $booking->activity->primaryImage ? asset('storage/' . $booking->activity->primaryImage->image_url) : asset('images/default-activity.jpg') }}" alt="{{ $booking->activity->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div>
+                                <h3 class="card-title" style="font-size: 20px; margin-bottom: 10px;">{{ $booking->activity->title }}</h3>
+                                <p class="stat-description" style="margin-bottom: 10px;">{{ $booking->activity->location }}</p>
+                                <div style="color: var(--text-secondary);">{{ $booking->time ?? 'Time not set' }}</div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
+                                <div style="text-align: right;">
+                                    <div style="color: var(--text-secondary); font-size: 14px;">Booking #{{ $booking->id }}</div>
+                                    <div class="stat-number" style="font-size: 20px; color: var(--accent-cyan);">{{ $booking->total_price ?? $booking->activity->price }} JOD</div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    @if(!$booking->review)
+                                        <button class="card-cta" style="padding: 8px 20px; font-size: 14px;" onclick="openReviewModal({{ $booking->id }})">Rate Activity</button>
+                                    @else
+                                        <button class="card-cta" style="padding: 8px 20px; font-size: 14px; background: var(--carbon-medium);" disabled>Rated</button>
+                                    @endif
+                                    <a href="{{ route('user.activity_details', $booking->activity->id) }}" class="card-cta" style="padding: 8px 20px; font-size: 14px;">View Details</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        @if(!$booking->review)
-                            <button class="card-cta" style="padding: 8px 20px; font-size: 14px;" onclick="openReviewModal({{ $booking->id }})">Rate Activity</button>
-                        @else
-                            <button class="card-cta" style="padding: 8px 20px; font-size: 14px; background: var(--carbon-medium);" disabled>Rated</button>
-                        @endif
-                        <a href="{{ route('user.activity_details', $booking->activity->id) }}" class="card-cta" style="padding: 8px 20px; font-size: 14px;">View Details</a>
+                @empty
+                    <div class="stat-card" style="padding: 40px; text-align: center;">
+                        <p>You have no cancelled bookings.</p>
                     </div>
-                </div>
+                @endforelse
             </div>
         </div>
-    @empty
-        <div class="stat-card" style="padding: 40px; text-align: center;">
-            <p>You have no cancelled bookings.</p>
-        </div>
-    @endforelse
-</div>
+    </section>
 
     <!-- Review Modal -->
     <div id="reviewModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
@@ -279,22 +299,22 @@
                 @csrf
                 <input type="hidden" name="booking_id" id="modalBookingId">
 
-               <!-- Star Rating -->
-<div style="margin-bottom:20px;">
-    <label style="color:var(--text-secondary); display:block; margin-bottom:10px;">Your Rating:</label>
-    <div class="star-rating" style="display:flex; gap:5px; justify-content:center;">
-        <input type="radio" name="rating" value="1" id="star1" required>
-        <label for="star1" style="font-size:24px; color:#ddd; cursor:pointer;">★</label>
-        <input type="radio" name="rating" value="2" id="star2">
-        <label for="star2" style="font-size:24px; color:#ddd; cursor:pointer;">★</label>
-        <input type="radio" name="rating" value="3" id="star3">
-        <label for="star3" style="font-size:24px; color:#ddd; cursor:pointer;">★</label>
-        <input type="radio" name="rating" value="4" id="star4">
-        <label for="star4" style="font-size:24px; color:#ddd; cursor:pointer;">★</label>
-        <input type="radio" name="rating" value="5" id="star5">
-        <label for="star5" style="font-size:24px; color:#ddd; cursor:pointer;">★</label>
-    </div>
-</div>
+                <!-- Star Rating -->
+                <div style="margin-bottom:20px;">
+                    <label style="color:var(--text-secondary); display:block; margin-bottom:10px;">Your Rating:</label>
+                    <div class="star-rating" style="display:flex; gap:5px; justify-content:center;">
+                        <input type="radio" name="rating" value="1" id="star1" required>
+                        <label for="star1" style="font-size:24px; color:#ddd; cursor:pointer;">★</label>
+                        <input type="radio" name="rating" value="2" id="star2">
+                        <label for="star2" style="font-size:24px; color:#ddd; cursor:pointer;">★</label>
+                        <input type="radio" name="rating" value="3" id="star3">
+                        <label for="star3" style="font-size:24px; color:#ddd; cursor:pointer;">★</label>
+                        <input type="radio" name="rating" value="4" id="star4">
+                        <label for="star4" style="font-size:24px; color:#ddd; cursor:pointer;">★</label>
+                        <input type="radio" name="rating" value="5" id="star5">
+                        <label for="star5" style="font-size:24px; color:#ddd; cursor:pointer;">★</label>
+                    </div>
+                </div>
 
                 <!-- Review Text -->
                 <div style="margin-bottom:20px;">
@@ -354,5 +374,17 @@
                 closeReviewModal();
             }
         });
+
+        // ✨ إخفاء رسالة النجاح تلقائياً بعد 5 ثواني
+        @if(session('success'))
+            setTimeout(() => {
+                const alert = document.querySelector('.alert-success');
+                if (alert) {
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-20px)';
+                    setTimeout(() => alert.remove(), 400);
+                }
+            }, 5000);
+        @endif
     </script>
 @endsection

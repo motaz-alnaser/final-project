@@ -95,20 +95,20 @@ class PaymentController extends Controller
                     'status' => 'confirmed'
                 ]);
 
-                return response()->json([
-                    'success' => true,
-                    'paymentId' => $payment->id,
-                    'receiptUrl' => $payment->receipt_url,
-                    'message' => 'Payment completed successfully! Your booking has been confirmed.',
-                ]);
+                // ✅ التعديل: توجيه مباشر مع رسالة نجاح
+                return redirect()
+                    ->route('user.bookings')
+                    ->with('success', '✅ Payment completed successfully! Your booking has been confirmed.');
             }
 
-            return response()->json([
-                'error' => 'Payment not completed yet.'
-            ], 400);
+            return redirect()
+                ->route('user.bookings')
+                ->with('error', 'Payment not completed yet. Please try again.');
 
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return redirect()
+                ->route('user.bookings')
+                ->with('error', 'An error occurred: ' . $e->getMessage());
         }
     }
 }

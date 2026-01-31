@@ -71,7 +71,7 @@
                                     </span>
                                 </td>
                                 <td>{{ $activity->bookings_count }}</td>
-                                <td>{{ $activity->category?->name ?? 'Uncategorized' }}</td>
+                                <td>{{ $activity->category?->name_en ?? 'Uncategorized' }}</td>
                                 <td>{{ $activity->host->name ?? 'Unknown' }}</td>
                                 <td>
                                     <span>{{ $activity->title }}</span>

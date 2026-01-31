@@ -4,7 +4,7 @@
         <div class="footer-brand">
             <div class="footer-logo">
                 <div class="logo-icon">
-                    <img src="{{ asset('images/downloadlogo.png') }}" alt="PRISM FLUX Logo" class="logo-img">
+                    <img src="{{ asset('images/downloadlogo-removebg-preview (1).png') }}" alt="PRISM FLUX Logo" class="logo-img">
                 </div>
             
             </div>

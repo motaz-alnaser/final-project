@@ -28,7 +28,7 @@ const stripe = Stripe('{{ config("services.stripe.key") }}');
 const elements = stripe.elements();
 
 const cardElement = elements.create('card', {
-    hidePostalCode: true,  // ← هذا السطر الجديد!
+    hidePostalCode: true,
     style: {
         base: {
             color: '#fff',
@@ -50,6 +50,7 @@ cardElement.mount('#card-element');
 const form = document.getElementById('payment-form');
 const message = document.getElementById('payment-message');
 
+// ✅ مُحسَّن: مُعدَّل للتوجيه التلقائي بعد نجاح الدفع
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -59,6 +60,7 @@ form.addEventListener('submit', async (e) => {
     message.textContent = '';
 
     try {
+        // الخطوة 1: إنشاء Payment Intent
         const response = await fetch('{{ route("booking_payment.store", $booking->id) }}', {
             method: 'POST',
             headers: {
@@ -67,12 +69,52 @@ form.addEventListener('submit', async (e) => {
             }
         });
 
+        // التحقق من حالة الاستجابة
+        if (!response.ok) {
+            // إذا كان الخطأ 419 (CSRF token mismatch)
+            if (response.status === 419) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Session Expired',
+                    text: 'Your session has expired. Please refresh the page and try again.',
+                    confirmButtonText: 'Reload Page'
+                }).then(() => {
+                    window.location.reload();
+                });
+                return;
+            }
+            
+            // إذا كان الخطأ 401 (Unauthenticated)
+            if (response.status === 401) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Authentication Required',
+                    text: 'Please log in again to continue.',
+                    confirmButtonText: 'Go to Login'
+                }).then(() => {
+                    window.location.href = '{{ route("login") }}';
+                });
+                return;
+            }
+            
+            // أي خطأ آخر
+            const errorText = await response.text();
+            throw new Error(errorText || 'Network error. Please try again.');
+        }
+
+        // التحقق من نوع المحتوى قبل تحليل JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && !contentType.includes('application/json')) {
+            throw new Error('Server returned unexpected response. Please try again.');
+        }
+
         const data = await response.json();
 
         if (data.error) {
             throw new Error(data.error);
         }
 
+        // الخطوة 2: تأكيد الدفع مع سترايب
         const result = await stripe.confirmCardPayment(data.clientSecret, {
             payment_method: {
                 card: cardElement,
@@ -87,54 +129,36 @@ form.addEventListener('submit', async (e) => {
             throw new Error(result.error.message);
         }
 
+        // ✅ الخطوة 3: توجيه تلقائي بعد نجاح الدفع
         if (result.paymentIntent.status === 'succeeded') {
-            const confirmResponse = await fetch('{{ route("booking_payment.confirm") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    payment_intent_id: result.paymentIntent.id,
-                    payment_method_id: result.paymentIntent.payment_method
-                })
+            Swal.fire({
+                icon: 'success',
+                title: 'Payment Processing...',
+                text: 'Please wait while we confirm your booking.',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
             });
 
-            const confirmData = await confirmResponse.json();
-
-            if (confirmData.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Payment Successful!',
-                    text: confirmData.message,
-                    html: `
-                        <div style="text-align: center;">
-                            <h3>Booking Confirmed! ✓</h3>
-                            <p style="margin: 15px 0;"><strong>Booking #${{ $booking->id }}</strong></p>
-                            <p style="margin: 10px 0;">${{ $booking->activity->title }}</p>
-                            <p style="margin: 10px 0;">Total: ${{ number_format($booking->total_amount, 2) }}</p>
-                            ${confirmData.receiptUrl ? `<p style="margin: 15px 0;"><a href="${confirmData.receiptUrl}" target="_blank" style="color: var(--accent-green);">View Receipt</a></p>` : ''}
-                            <div style="margin-top: 20px;">
-                                <a href="{{ route('user.bookings') }}" style="display: inline-block; padding: 10px 20px; background: var(--accent-green); color: white; text-decoration: none; border-radius: 5px; margin: 5px;">View My Bookings</a>
-                                <a href="{{ route('user.activities') }}" style="display: inline-block; padding: 10px 20px; background: var(--metal-dark); color: white; text-decoration: none; border-radius: 5px; margin: 5px;">Browse More Activities</a>
-                            </div>
-                        </div>
-                    `,
-                    showConfirmButton: false,
-                    allowOutsideClick: false,
-                    width: '500px'
-                });
-            } else {
-                throw new Error('Payment confirmation failed');
-            }
+            // توجيه تلقائي إلى صفحة التأكيد
+            setTimeout(() => {
+                window.location.href = '{{ route("booking_payment.confirm") }}?payment_intent_id=' + result.paymentIntent.id + '&payment_method_id=' + result.paymentIntent.payment_method;
+            }, 1000);
         }
+
     } catch (error) {
-        message.textContent = error.message;
-        message.style.color = '#fa755a';
+        console.error('Payment error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Failed',
+            text: error.message || 'An unexpected error occurred. Please try again.',
+            confirmButtonText: 'OK'
+        });
         submitButton.disabled = false;
         submitButton.textContent = 'Pay Now';
     }
 });
 </script>
-
 @endsection

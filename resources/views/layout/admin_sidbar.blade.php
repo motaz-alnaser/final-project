@@ -1,7 +1,7 @@
 <div class="admin-sidebar">
-    <div class="sidebar-logo">
-        <h2>PRISM <span>FLUX</span></h2>
-    </div>
+    <div class="logo-icon">
+                <img src="{{ asset('images/downloadlogo-removebg-preview (1).png') }}" alt="PRISM FLUX Logo" class="logo-img">
+            </div>
 
     <ul class="sidebar-menu">
         

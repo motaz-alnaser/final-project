@@ -85,6 +85,7 @@ public function bookings(Request $request)
 
     return view('owner.bookings', compact('bookings', 'activities'));
 }
+
 public function deleteBooking($bookingId)
 {
     $hostId = Auth::id();
@@ -121,7 +122,7 @@ public function storeActivity(Request $request)
         'category_id' => ['required', 'exists:categories,id'],
         'images' => ['nullable', 'array'],
         'images.*' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
-        // ⭐️ أضف هذين الحقلين إلى التحقق
+      
         'activity_date' => ['required', 'date', 'after_or_equal:today'],
         'activity_time' => ['required', 'date_format:H:i'],
     ]);
@@ -136,7 +137,7 @@ public function storeActivity(Request $request)
         'category_id' => $validated['category_id'],
         'host_id' => $hostId,
         'status' => 'active',
-        // ⭐️ استخدم القيم الفعلية من الـ validated
+        
         'activity_date' => $validated['activity_date'],
         'activity_time' => $validated['activity_time'],
     ]);
@@ -159,7 +160,7 @@ public function storeActivity(Request $request)
             }
         }
 
-        // تحديد الصورة الأولى كصورة رئيسية
+       
         $firstImage = $activity->images()->first();
         if ($firstImage) {
             $firstImage->update(['is_primary' => true]);

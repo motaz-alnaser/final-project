@@ -31,4 +31,9 @@ class Payment extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function payment()
+{
+    return $this->hasOne(Payment::class);
+}
+
 }
